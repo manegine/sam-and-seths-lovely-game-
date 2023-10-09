@@ -10,10 +10,19 @@ public class SpineResponseToFeet : MonoBehaviour
 {
     public GameObject leftFootIsOnGroundObject;
     public GameObject rightFootIsOnGroundObject;
+    public PIDcontroller PIDcontroller;
+    public float desiredFootForce;
+    private float forceFromFeet;
+    public float availableForce;
+    public float desiredHeightAboveGround;
+    public float heightAboveGround;
     // Start is called before the first frame update
     void Start()
     {
-
+        this.PIDcontroller = new PIDcontroller();
+        PIDcontroller.Start();
+        this.desiredHeightAboveGround = 2.5f;
+        this.heightAboveGround = 2f;
     }
 
     // Update is called once per frame
@@ -28,7 +37,12 @@ public class SpineResponseToFeet : MonoBehaviour
         Vector3 ForceDirection = new Vector3(0.0f, 1.0f, 0.0f);
         Rigidbody MyRigidBody = this.GetComponent<Rigidbody>();
         float AverageFootDistance;
-        float FootForceMagnitude = 100.0f;
+
+
+        float FootForceMagnitude = 600.0f; //scales the available force for standing; the strength of the feet
+        float MaxFootForce = 300.0f; //scales the PID's upper and lower bounds
+
+
         float RightFootForce = FootForceMagnitude;
         float LeftFootForce = FootForceMagnitude;
 
@@ -42,7 +56,7 @@ public class SpineResponseToFeet : MonoBehaviour
                 LeftFootPosition = obj.transform.position;
                 if (isOnGround == true)
                 {
-                    LeftFootForce = 100.0f;
+                    LeftFootForce = FootForceMagnitude;
                 }
                 else
                 {
@@ -55,7 +69,7 @@ public class SpineResponseToFeet : MonoBehaviour
                 RightFootPosition = obj.transform.position;
                 if (isOnGround == true)
                 {
-                    RightFootForce = 100.0f;
+                    RightFootForce = FootForceMagnitude;
                 }
                 else
                 {
@@ -64,9 +78,36 @@ public class SpineResponseToFeet : MonoBehaviour
             }
         }
 
+        // find our height above the ground
+        Ray heightRay = new Ray(this.transform.position, Vector3.down);
+        float raycastLength = 20.0f;
+        if (Physics.Raycast(heightRay, out RaycastHit hit, raycastLength))
+        {
+            this.heightAboveGround = transform.position.y - hit.point.y;
+        }
+        else
+        {
+            this.heightAboveGround = 20.0f;
+        }
+
 
         // foot force is inversely proportional to the distance between the feet and the head
         AverageFootDistance = Math.Abs(MyPosition[1] - LeftFootPosition[1]) + Math.Abs(MyPosition[1] - RightFootPosition[1]);
-        MyRigidBody.AddForce(ForceDirection * (LeftFootForce+RightFootForce)/2 * 1/Math.Min(AverageFootDistance, 1));
+        if (LeftFootForce + RightFootForce == 100.0f)
+        {
+            this.availableForce = ((LeftFootForce + RightFootForce * 1.5f) / 2) * (1 / Math.Max(AverageFootDistance * 2, 0.5f));
+        }
+        else
+        {                                   // average force between the feet, multiplied by 1/distance, which can't go below 0.5m
+            this.availableForce = ((LeftFootForce + RightFootForce) / 2) * (1 / Math.Max(AverageFootDistance * 2, 0.5f));
+        }
+
+        //update the PID to work out how much force we want to use
+        PIDcontroller.desired = this.desiredHeightAboveGround;
+        PIDcontroller.actual = this.heightAboveGround;
+        PIDcontroller.Compute();
+        this.desiredFootForce = PIDcontroller.response * MaxFootForce;
+        this.forceFromFeet = Math.Max(Math.Min(desiredFootForce, this.availableForce), this.availableForce * -1);
+        MyRigidBody.AddForce(ForceDirection * this.forceFromFeet);
     }
 }
