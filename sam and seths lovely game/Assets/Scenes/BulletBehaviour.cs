@@ -25,7 +25,7 @@ public class BulletBehaviour : MonoBehaviour
         position = this.transform.position;
         Vector3 velocity = (position - oldPosition) / Time.deltaTime;
         trailRenderer.widthMultiplier = damage/50;
-
+        
 
         oldPosition = position;
     }

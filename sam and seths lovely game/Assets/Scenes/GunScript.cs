@@ -11,7 +11,7 @@ public class gunscript : MonoBehaviour
     //this is unfinished 
     public float ShootForce, UpwardForce;
 
-    public float Spread, ReloadTime, TimeBetweenShots;
+    public float Spread, bRecoil, hRecoil, vRecoil, ReloadTime, RPM;
     public int MagazineSize, BulletsPerShot;
     public bool FullAuto;
     public int BurstSize;
@@ -19,6 +19,7 @@ public class gunscript : MonoBehaviour
 
     public bool Shooting, ReadyToShoot, Reloading;
     private bool AllowInvoke = true;
+    private float TimeBetweenShots;
     // the camera that controls the gun and the point the bullet spawns on
     public Camera MainCamera;
     public Transform AttackSource;
@@ -32,6 +33,7 @@ public class gunscript : MonoBehaviour
     {
         BulletsLeft = MagazineSize;
         ReadyToShoot = true;
+        TimeBetweenShots = 60/RPM;
 
     }
     private void Update()
@@ -68,7 +70,7 @@ public class gunscript : MonoBehaviour
     {
         ReadyToShoot = false;
         //maincamera is a placeholder unless it works might need some tweaking 
-        Ray ray = MainCamera.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0));
+        Ray ray = new Ray(this.transform.position, this.transform.forward);
         RaycastHit hit;
         Vector3 TargetPoint;
         if (Physics.Raycast(ray, out hit))
@@ -91,6 +93,11 @@ public class gunscript : MonoBehaviour
         currentBullet.transform.forward = BulletDirection.normalized;
         currentBullet.GetComponent<Rigidbody>().AddForce(BulletDirection.normalized * ShootForce, ForceMode.Impulse);
         currentBullet.GetComponent<Rigidbody>().AddForce(AttackSource.transform.up * UpwardForce, ForceMode.Impulse);
+
+        // add recoil forces to the gun
+        this.GetComponent<Rigidbody>().AddForce(this.transform.forward * -1 * bRecoil);
+        this.GetComponent<Rigidbody>().AddForce(this.transform.right * Random.Range(-hRecoil, hRecoil));
+        this.GetComponent<Rigidbody>().AddForce(this.transform.up * Random.Range(0.5f*vRecoil, vRecoil));
         BulletsLeft--;
         BulletsShot++;
 
