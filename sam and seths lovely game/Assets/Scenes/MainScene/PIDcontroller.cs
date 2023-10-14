@@ -39,7 +39,7 @@ public class PIDcontroller
         //Debug.Log(this.integral * this.Ki);
         this.response = (error * this.Kp) + (derivative * this.Kd) + (this.integral * this.Ki);
         this.response = Mathf.Max(Mathf.Min(this.response, 1), -1);
-        Debug.Log(customer);
-        Debug.Log(error);
+        //Debug.Log(customer);
+        //Debug.Log(error);
     }
 }

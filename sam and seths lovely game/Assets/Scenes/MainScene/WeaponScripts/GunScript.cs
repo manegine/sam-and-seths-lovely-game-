@@ -97,7 +97,7 @@ public class gunscript : MonoBehaviour
         // add recoil forces to the gun
         this.GetComponent<Rigidbody>().AddForce(this.transform.forward * -1 * bRecoil);
         this.GetComponent<Rigidbody>().AddForce(this.transform.right * Random.Range(-hRecoil, hRecoil));
-        this.GetComponent<Rigidbody>().AddForce(this.transform.up * Random.Range(0.5f*vRecoil, vRecoil));
+        this.GetComponent<Rigidbody>().AddForce(this.transform.up * -1 * Random.Range(0.5f*vRecoil, vRecoil));
         BulletsLeft--;
         BulletsShot++;
 
