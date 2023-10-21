@@ -4,12 +4,14 @@ using System.Collections.Generic;
 using System.Security.Cryptography.X509Certificates;
 using JetBrains.Annotations;
 using Unity.VisualScripting;
+using UnityEditor;
 using UnityEngine;
 
 public class SpineResponseToFeet : MonoBehaviour
 {
     public GameObject leftFootIsOnGroundObject;
     public GameObject rightFootIsOnGroundObject;
+    public GameObject player;
     public PIDcontroller PIDcontroller;
     public float desiredFootForce;
     private float forceFromFeet;
@@ -20,14 +22,29 @@ public class SpineResponseToFeet : MonoBehaviour
     void Start()
     {
         this.PIDcontroller = new PIDcontroller();
-        PIDcontroller.Start();
-        this.desiredHeightAboveGround = 2.5f;
+        GameObject[] body_parts;
+        body_parts = GameObject.FindGameObjectsWithTag("Player");
+        foreach (GameObject obj in body_parts)
+        {
+            if (obj.name == "PlayerRagdoll")
+            {
+                player = obj;
+            }
+        }
+        this.PIDcontroller.Start();
+        this.desiredHeightAboveGround = 3f;
         this.heightAboveGround = 2f;
     }
 
     // Update is called once per frame
     void Update()
     {
+        if (player.GetComponent<PlayerEntity>().Alive == false)
+        {
+            Debug.Log("player's dead");
+            return;
+        }
+
         GameObject[] body_parts;
         body_parts = GameObject.FindGameObjectsWithTag("Player");
 

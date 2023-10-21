@@ -23,14 +23,25 @@ public class gunscript : MonoBehaviour
     // the camera that controls the gun and the point the bullet spawns on
     public Camera MainCamera;
     public Transform AttackSource;
+    public GameObject player;
 
 
-        //placeholders for stuff we will need to do later 
+    //placeholders for stuff we will need to do later 
     public GameObject MuzzleFlash;
     public TextMeshProUGUI text;
 
     private void Awake()
     {
+        GameObject[] body_parts;
+        body_parts = GameObject.FindGameObjectsWithTag("Player");
+        foreach (GameObject obj in body_parts)
+        {
+            if (obj.name == "PlayerRagdoll")
+            {
+                player = obj;
+            }
+        }
+
         BulletsLeft = MagazineSize;
         ReadyToShoot = true;
         TimeBetweenShots = 60/RPM;
@@ -42,6 +53,11 @@ public class gunscript : MonoBehaviour
     }
     private void myinput() 
     {
+        // return if the player is dead
+        if (player.GetComponent<PlayerEntity>().Alive == false)
+        {
+            return;
+        }
         // check if we are trying to fire
         if (FullAuto) Shooting = Input.GetKey(KeyCode.Mouse0);
         else Shooting = Input.GetKeyDown(KeyCode.Mouse0);

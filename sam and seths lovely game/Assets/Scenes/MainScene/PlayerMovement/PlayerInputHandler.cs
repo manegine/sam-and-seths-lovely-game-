@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.UIElements;
 
@@ -16,6 +17,7 @@ public class PlayerInputHandler : MonoBehaviour
     public Quaternion targetRotation;
     public Quaternion currentRotation;
     public Quaternion deltaRotation;
+    public GameObject player;
     // Start is called before the first frame update
     void Start()
     {
@@ -24,11 +26,27 @@ public class PlayerInputHandler : MonoBehaviour
         rb = GetComponent<Rigidbody>();
         UnityEngine.Cursor.visible = false;
         UnityEngine.Cursor.lockState = CursorLockMode.Locked;
+
+        // find the player parent
+        GameObject[] body_parts;
+        body_parts = GameObject.FindGameObjectsWithTag("Player");
+        foreach (GameObject obj in body_parts)
+        {
+            if (obj.name == "PlayerRagdoll")
+            {
+                player = obj;
+            }
+        }
     }
 
     // Update is called once per frame
     void Update()
     {
+        if (player.GetComponent<PlayerEntity>().Alive == false)
+        {
+            return;
+        }
+
         Vector2 mouseDelta = new Vector2(Input.GetAxis("Mouse X"), Input.GetAxis("Mouse Y"));
 
         // Update the target direction with both pitch and yaw changes.
